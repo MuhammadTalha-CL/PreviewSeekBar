@@ -28,7 +28,6 @@ import java.util.concurrent.Executors
 import okhttp3.Request
 import okhttp3.Response
 import kotlinx.coroutines.*
-import kotlin.math.log
 
 class MainActivity : FragmentActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -57,11 +56,13 @@ class MainActivity : FragmentActivity() {
         setupScrubListener()
     }
 
-    private fun parseThumbnailMetadataFromJson(context: Context): List<ThumbnailMetadata> {
-        val jsonString = context.assets.open("frames_metadata.json").bufferedReader().use { it.readText() }
-        Log.d("Thumbnail", "Read JSON: $jsonString")
-        return Gson().fromJson(jsonString, object : TypeToken<List<ThumbnailMetadata>>() {}.type)
-    }
+    //Yeh Agr Ham Locally Rakhein URL sy na lein to is trh fr JSOn Parse hgi
+
+//    private fun parseThumbnailMetadataFromJson(context: Context): List<ThumbnailMetadata> {
+//        val jsonString = context.assets.open("frames_metadata.json").bufferedReader().use { it.readText() }
+//        Log.d("Thumbnail", "Read JSON: $jsonString")
+//        return Gson().fromJson(jsonString, object : TypeToken<List<ThumbnailMetadata>>() {}.type)
+//    }
 
     @OptIn(UnstableApi::class)
     private fun setupScrubListener() {
@@ -96,7 +97,8 @@ class MainActivity : FragmentActivity() {
                 }
             })
     }
-
+//Yeh Decider Function hai agr cache sy mil gya to if sy e return hjai ga
+    //nahi to fetchThumbnailFromUrl() yeh call krna paray ga
     private fun fetchAndDisplayThumbnail(position: Long) {
         val nearestThumbnail = getNearestThumbnail(position)
         Log.d("Thumbnail", "fetchAndDisplayThumbnail at the nearrest: $nearestThumbnail")
@@ -126,6 +128,7 @@ class MainActivity : FragmentActivity() {
 //        return closestThumbnail
     }
 
+    //Fetching the Updated Thumbnail
     private fun fetchThumbnailFromUrl(imageUrl: String) {
         executorService.submit {
             try {
@@ -148,7 +151,7 @@ class MainActivity : FragmentActivity() {
             }
         }
     }
-
+//Agr Cache nh hwa to yeh function tb call hga
     private fun downloadImage(url: String): Bitmap? {
         return try {
             val inputStream = URL(url).openStream()
@@ -159,6 +162,8 @@ class MainActivity : FragmentActivity() {
             null
         }
     }
+
+    //yeh function hamei jo thumbnail Preview ki Position hai jo Seek k sath sath chal rhi usmy HelpOut krrhi
         private fun updateThumbnailPosition(position: Long) {
         val timeBar = binding.playerView.findViewById<DefaultTimeBar>(R.id.exo_progress)
         val timeBarWidth = timeBar.width
@@ -177,6 +182,7 @@ class MainActivity : FragmentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         // Clear the cache when the activity is destroyed
+        //Issy Memory effectivelty use hgi
         thumbnailCache.clear()
         Log.d("Thumbnail", "Cache cleared")
     }
@@ -192,7 +198,8 @@ class MainActivity : FragmentActivity() {
                     val jsonResponse = response.body?.string()
                     Log.d("Thumbnail", "Fetched JSON: $jsonResponse")
 
-                    // Pass the parsed list back to the main thread using callback
+                    // Pass the parsed list back to the main Q k Backgorund py srf fetching ho skhti hai
+                    //Setup Main Thread py hga oherwise exception ayegi leading to crash
                     withContext(Dispatchers.Main) {
                         thumbnailList = Gson().fromJson(jsonResponse, object : TypeToken<List<ThumbnailMetadata>>() {}.type)
                     }
